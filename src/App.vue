@@ -6,7 +6,7 @@ export default {
     return {
       items: <ToDo[]>[],
       newItem: '',
-      hiddenCompleted: false
+      hideCompleted: false
     }
   },
   methods: {
@@ -37,7 +37,7 @@ export default {
         });
       } else {
         toast('Task not completed', {
-          type: 'warning'
+          type: 'info'
         });
       }
     },
@@ -48,6 +48,17 @@ export default {
         type: 'success'
       });
     },
+    updateItem(e, id: number) {
+      e.target.focus();
+      e.target.select();
+      e.target.addEventListener('blur', () => {
+        this.items.filter((item) => item.id === id)[0].text = e.target.value;
+        localStorage.setItem('items', JSON.stringify(this.items));
+        toast('Task edited', {
+          type: 'success'
+        });
+      }, {once: true});
+    },
   },
   mounted() {
     if(localStorage.getItem('items') !== null) {
@@ -55,12 +66,12 @@ export default {
     }
   },
   watch: {
-    hiddenCompleted() {
+    hideCompleted() {
       this.items = this.items.filter((item) => !item.done);
-      if(!this.hiddenCompleted) {
+      if(!this.hideCompleted) {
         this.items = JSON.parse(localStorage.getItem('items') ?? '[]');
       }
-    }
+    },
   },
 }
 
@@ -81,7 +92,7 @@ interface ToDo {
         <input type="submit" class="btn btn-primary"/>
       </div>
       <div class="form-check">
-        <input type="checkbox" id="hide" v-model="hiddenCompleted" class="form-check-input"/>
+        <input type="checkbox" id="hide" v-model="hideCompleted" class="form-check-input"/>
         <label for="hide" class="form-check-label">
           Hide completed
         </label>
@@ -91,9 +102,7 @@ interface ToDo {
       <li v-for="item in items" :key="item.id"
           class="list-group-item d-flex justify-content-between gap-3 align-items-center col-5">
         <input type="checkbox" :checked="item.done" @change="check(item.id)" class="form-check-input"/>
-        <span>
-          {{ item.text }}
-        </span>
+        <input type="text" v-model="item.text" class="form-control border-0" @click="updateItem($event, item.id)"/>
         <button @click="remove(item.id)" class="btn btn-danger">
           <i class="bi bi-trash3-fill"></i>
         </button>
@@ -102,5 +111,4 @@ interface ToDo {
   </main>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
